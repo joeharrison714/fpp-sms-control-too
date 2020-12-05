@@ -1,0 +1,20 @@
+{
+	"repoName": "fpp-sms-control-too",
+	"name": "SMS Control Too",
+	"author": "Joe Harrison (joeharrison714)",
+	"description": "Reimagined SMS control plugin. Allows you to map text commands to FPP commands.",
+	"homeURL": "https://github.com/joeharrison714/fpp-sms-control-too",
+	"srcURL": "https://github.com/joeharrison714/fpp-sms-control-too.git",
+	"bugURL": "https://github.com/joeharrison714/fpp-sms-control-too/issues",
+	"allowUpdates": 1,
+	"versions": [
+		{
+			"minFPPVersion": "4.0",
+			"maxFPPVersion": "0",
+			"branch": "master",
+			"sha": "",
+			"dependencies": {
+			}
+		}
+	]
+}
