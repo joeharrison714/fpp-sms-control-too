@@ -48,27 +48,27 @@ function sendMessageLocal($did, $destination, $message){
 
     global $apiBasePath,$voipmsApiUsername,$voipmsApiPassword;
     $url = $apiBasePath . "/rest.php";
-    // $options = array(
-    //     'http' => array(
-    //     'method'  => 'GET'
-    //     )
-    // );
-    // $getdata = http_build_query(
-    //     array(
-    //     'api_username' => $voipmsApiUsername,
-    //     'api_password' => $voipmsApiPassword,
-    //     'method'=>'sendSMS',
-    //     'did'=>$did,
-    //     'dst'=>$destination,
-    //     'message'=>$message
-    //      )
-    // );
-    // logInfo("Sending SMS to: " . $destination);
-    // $context = stream_context_create( $options );
-    // logDebug("API Request: " . $url ."?" .$getdata);
-    // $result = file_get_contents( $url ."?" .$getdata, false, $context );
-    // logDebug("API response: " . $result);
-    // return json_decode( $result );
+    $options = array(
+        'http' => array(
+        'method'  => 'GET'
+        )
+    );
+    $getdata = http_build_query(
+        array(
+        'api_username' => $voipmsApiUsername,
+        'api_password' => $voipmsApiPassword,
+        'method'=>'sendSMS',
+        'did'=>$did,
+        'dst'=>$destination,
+        'message'=>$message
+         )
+    );
+    logInfo("Sending SMS to: " . $destination);
+    $context = stream_context_create( $options );
+    logDebug("API Request: " . $url ."?" .$getdata);
+    //$result = file_get_contents( $url ."?" .$getdata, false, $context );
+    //logDebug("API response: " . $result);
+    //return json_decode( $result );
 }
 
 ?>
