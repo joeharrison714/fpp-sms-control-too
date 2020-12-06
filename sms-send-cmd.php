@@ -68,7 +68,6 @@ function sendMessageLocal($did, $destination, $message){
     logDebug("API Request: " . $url ."?" .$getdata);
     $result = file_get_contents( $url ."?" .$getdata, false, $context );
     logDebug("API response: " . $result);
-    //return json_decode( $result );
 }
 
 ?>

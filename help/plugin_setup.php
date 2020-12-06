@@ -1,1 +1,7 @@
-<h2>The context-sensitive Help page for the plugin's smssettings.php page</h2>
+
+<?php
+
+$result=file_get_contents("https://raw.githubusercontent.com/joeharrison714/fpp-sms-control-too/master/README.md");
+?>
+
+<?= $result ?>
