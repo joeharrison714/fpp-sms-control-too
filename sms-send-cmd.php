@@ -66,8 +66,8 @@ function sendMessageLocal($did, $destination, $message){
     logInfo("Sending SMS to: " . $destination);
     $context = stream_context_create( $options );
     logDebug("API Request: " . $url ."?" .$getdata);
-    //$result = file_get_contents( $url ."?" .$getdata, false, $context );
-    //logDebug("API response: " . $result);
+    $result = file_get_contents( $url ."?" .$getdata, false, $context );
+    logDebug("API response: " . $result);
     //return json_decode( $result );
 }
 
