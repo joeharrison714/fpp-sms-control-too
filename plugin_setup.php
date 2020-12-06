@@ -136,7 +136,8 @@ function SaveSMS() {
     smsConfig["voipmsApiPassword"] = $("input[name=voipms_api_password]").val();
     smsConfig["voipmsDid"] = $("input[name=voipms_did]").val();
     smsConfig["messageSuccess"] = $("input[name=message_success]").val();
-    smsConfig["messageFail"] = $("input[name=message_fail]").val();
+    smsConfig["messageInvalid"] = $("input[name=message_invalid]").val();
+    smsConfig["messageCondition"] = $("input[name=message_condition]").val();
     smsConfig["enabled"] = $("input[name=sms_enabled]").is(':checked');
     smsConfig["logLevel"] = $("input[name=log_level]").val();
     
@@ -204,9 +205,16 @@ $(document).ready(function() {
 
 
 <tr>
-	<th style="text-align: left">Fail message</th>
+	<th style="text-align: left">Invalid Command message</th>
 <td>
-<input type='text' size='80' maxlength='160' name='message_fail'>
+<input type='text' size='80' maxlength='160' name='message_invalid'>
+</td>
+</tr>
+
+<tr>
+	<th style="text-align: left">Unmet condition message</th>
+<td>
+<input type='text' size='80' maxlength='160' name='message_condition'>
 </td>
 </tr>
 
@@ -253,7 +261,8 @@ $("input[name=voipms_api_username]").val(smsConfig["voipmsApiUsername"]);
 $("input[name=voipms_api_password]").val(smsConfig["voipmsApiPassword"]);
 $("input[name=voipms_did]").val(smsConfig["voipmsDid"]);
 $("input[name=message_success]").val(smsConfig["messageSuccess"]);
-$("input[name=message_fail]").val(smsConfig["messageFail"]);
+$("input[name=message_invalid]").val(smsConfig["messageInvalid"]);
+$("input[name=message_condition]").val(smsConfig["messageCondition"]);
 $("input[name=sms_enabled]").prop('checked', smsConfig["enabled"]);
 $("input[name=log_level]").val(smsConfig["logLevel"]);
 
