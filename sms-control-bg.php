@@ -3,6 +3,9 @@ include_once "sms-common.php";
 
 $logFile = $settings['logDirectory']."/".$pluginName.".log";
 $sleepTime = 5;
+$apiBasePath = "https://voip.ms/api/v1";
+$oldestMessageAge = $sleepTime * 4;
+$lastProcessedMessageDate = (new DateTime())->setTimestamp(0);
 
 $pluginJson = convertAndGetSettings();
 
@@ -66,30 +69,136 @@ if($isEnabled == 1) {
         die;
     }
 
-    executeKeywordCommand($smsKeywords["START"]);
+    //executeKeywordCommand($smsKeywords["START"]);
+
+    while(true) {
+        try{
+            doCheck();
+        } catch (Exception $e) {
+            logInfo('Exception: ' . $e->getMessage());
+        }
+
+        logDebug("Sleeping");
+        sleep(5);
+    }
 
 }else {
     logInfo("SMS Control Plugin is disabled");
+}
+
+function doCheck(){
+    $messageResponse = getMessages();
+    logDebug("API Response Status: " . $messageResponse->status);
+
+    if ($messageResponse->status == "success"){
+        processMessages($messageResponse);
+    }
+}
+
+
+function getMessages(){
+    global $apiBasePath,$voipmsApiUsername,$voipmsApiPassword,$voipmsDid;
+    $url = $apiBasePath . "/rest.php";
+    $options = array(
+        'http' => array(
+        'method'  => 'GET'
+        )
+    );
+
+    $paramsArray = array(
+        'api_username' => $voipmsApiUsername,
+        'api_password' => $voipmsApiPassword,
+        'method'=>'getSMS',
+        'type'=>'1',
+    );
+    if (strlen($voipmsDid) > 0){
+        $paramsArray["did"] = $voipmsDid;
+    }
+
+    $getdata = http_build_query(
+        $paramsArray
+    );
+    $context = stream_context_create( $options );
+    logDebug("API Request: " . $url ."?" .$getdata);
+    $result = file_get_contents( $url ."?" .$getdata, false, $context );
+    logDebug("API response: " . $result);
+    return json_decode( $result );
+}
+
+
+function processMessages($messageResponse){
+    global $startCommand, $oldestMessageAge, $lastProcessedMessageDate;
+
+    foreach($messageResponse->sms as $item) {
+        try{
+            $id = $item->id;
+            $date = $item->date;
+            $did = $item->did;
+            $contact = $item->contact;
+            $message = trim($item->message);
+            logDebug("Message ID: " . $id);
+
+            $action = "ignored";
+
+            $now = new DateTime('now');
+            $datetime = new DateTime( $date );
+            $diffInSeconds = $now->getTimestamp() - $datetime->getTimestamp();
+            logDebug("Message Age: " . $diffInSeconds);
+            logDebug("Last Processed Message Date: " . $lastProcessedMessageDate->format('Y-m-d H:i:s'));
+
+            if ($diffInSeconds > $oldestMessageAge){
+                $action = "too old";
+                logDebug("Message older than oldest age");
+            }
+            elseif($datetime <= $lastProcessedMessageDate){
+                $action = "too old";
+                logDebug("Message older than last processed message date");
+            }
+            else {
+                // if (strcasecmp($message, $startCommand) == 0) {
+                //     $action = "start show";
+                //     if ($shouldStart){
+                //         $action = "start show (duplicate)";
+                //     }
+                //     $shouldStart = true;
+                //     $respondTo[$contact] = $did;
+                // }
+                // else{
+                //     logInfo("Unknown message: " . $message);
+                // }
+
+                // saveMessageToCsv($id, $date, $did, $contact, $message, $action);
+            }
+
+            if ($datetime > $lastProcessedMessageDate){
+                $lastProcessedMessageDate = $datetime;
+                logDebug("Setting Last Processed Message Date to " . $lastProcessedMessageDate->format('Y-m-d H:i:s'));
+            }
+
+            //deleteMessage($id);
+
+        } catch (Exception $e) {
+            logInfo('Failed on processing message: ' . $e->getMessage());
+        }
+    }
+
+    //logInfo("Will respond to: " . json_encode($respondTo));
 }
 
 function executeKeywordCommand($data){
     $url = "http://127.0.0.1/api/command/";
 
     if (strlen($data["command"]) > 0){
-        //$url .= urlencode($data["command"]);
         $url .= $data["command"];
         $url = str_replace(' ', '%20', $url);
 
-        echo "URL: " . $url . "\n";
-
-        $getUrl = $url;
-        foreach($data["args"] as $arg) {
-            $getUrl .= "/" . $arg;
-        }
+        // $getUrl = $url;
+        // foreach($data["args"] as $arg) {
+        //     $getUrl .= "/" . $arg;
+        // }
 
         $postJson = json_encode($data["args"]);
-
-        echo "postJson: " . $postJson . "\n";
+        logDebug("Post JSON: " . $postJson);
         
         $opts = array('http' =>
             array(
