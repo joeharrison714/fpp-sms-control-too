@@ -94,7 +94,7 @@ function RenumberEvents() {
 var smsConfig = <? echo json_encode($pluginJson, JSON_PRETTY_PRINT); ?>;
 function SaveSMSConfig(config) {
     var data = JSON.stringify(config);
-    alert(data);
+    //alert(data);
     $.ajax({
         type: "POST",
         url: 'fppjson.php?command=setPluginJSON&plugin=<?= $pluginName ?>',
@@ -139,7 +139,7 @@ function SaveSMS() {
     smsConfig["messageInvalid"] = $("input[name=message_invalid]").val();
     smsConfig["messageCondition"] = $("input[name=message_condition]").val();
     smsConfig["enabled"] = $("input[name=sms_enabled]").is(':checked');
-    smsConfig["logLevel"] = $("input[name=log_level]").val();
+    smsConfig["logLevel"] = $("select[name=log_level]").val();
     
     SaveSMSConfig(smsConfig);
 }

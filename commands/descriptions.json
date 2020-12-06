@@ -1,0 +1,21 @@
+[
+{ "name": "Send SMS Message",
+  "script": "send.sh",
+  "args": [
+    {
+        "allowBlanks" : false,
+        "description" : "Phone Number",
+        "name" : "contact",
+        "optional" : false,
+        "type" : "string"
+    },
+    {
+      "allowBlanks" : false,
+      "description" : "Message",
+      "name" : "message",
+      "optional" : false,
+      "type" : "string"
+  }
+  ]
+}
+]

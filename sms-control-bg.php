@@ -4,31 +4,19 @@ include_once "sms-common.php";
 $logFile = $settings['logDirectory']."/".$pluginName.".log";
 $messagesCsvFile = $settings['logDirectory']."/".$pluginName."-messages.csv";
 $sleepTime = 5;
-$apiBasePath = "https://voip.ms/api/v1";
 $oldestMessageAge = $sleepTime * 4;
 $lastProcessedMessageDate = (new DateTime())->setTimestamp(0);
 
 $pluginJson = convertAndGetSettings();
 $keywordData = array();
-$enabledSetting = returnIfExists($pluginJson, "enabled");
 
-$isEnabled = false;
-if (is_bool($enabledSetting)){
-    $isEnabled = $enabledSetting;
-}
-else{
-    $isEnabled = $enabledSetting == "true" ? true : false;
-}
-
-$logLevel = "INFO";
-$logLevelSetting = returnIfExists($pluginJson, "logLevel");
-if ($logLevelSetting == "DEBUG"){
-    $logLevel = "DEBUG";
-}
+$isEnabled = getIsEnabled($pluginJson);
+$logLevel = getLogLevel($pluginJson);
 
 if($isEnabled == 1) {
     echo "Starting SMS Control Plugin\n";
     logInfo("Starting SMS Control Plugin");
+    logInfo("Log Level: " . $logLevel);
 
     $voipmsApiUsername = returnIfExists($pluginJson, "voipmsApiUsername");
     $voipmsApiPassword = returnIfExists($pluginJson, "voipmsApiPassword");
@@ -272,44 +260,6 @@ function processMessage($smsMessage){
     }
 }
 
-function sendMessage($did, $destination, $message){
-    if (strlen($did) == 0){
-        throw new Exception("No did specified to send from.");
-    }
-
-    if (strlen($destination) == 0){
-        throw new Exception("No destination specified to send to.");
-    }
-
-    if (strlen($message) == 0){
-        throw new Exception("No message specified.");
-    }
-
-    global $apiBasePath,$voipmsApiUsername,$voipmsApiPassword;
-    $url = $apiBasePath . "/rest.php";
-    $options = array(
-        'http' => array(
-        'method'  => 'GET'
-        )
-    );
-    $getdata = http_build_query(
-        array(
-        'api_username' => $voipmsApiUsername,
-        'api_password' => $voipmsApiPassword,
-        'method'=>'sendSMS',
-        'did'=>$did,
-        'dst'=>$destination,
-        'message'=>$message
-         )
-    );
-    logInfo("Sending SMS to: " . $destination);
-    $context = stream_context_create( $options );
-    logDebug("API Request: " . $url ."?" .$getdata);
-    $result = file_get_contents( $url ."?" .$getdata, false, $context );
-    logDebug("API response: " . $result);
-    return json_decode( $result );
-}
-
 function executeKeywordCommand($data){
     $url = "http://127.0.0.1/api/command/";
 
@@ -360,30 +310,6 @@ function getFppStatus() {
   }
 
 
-function logDebug($data){
-    global $logLevel;
-    if ($logLevel == "DEBUG"){
-        logEntry($data);
-    }
-    echo $data . "\n";
-}
-function logInfo($data){
-    global $logLevel;
-    if ($logLevel == "INFO" || $logLevel == "DEBUG"){
-        logEntry($data);
-    }
-    echo $data . "\n";
-}
-function logEntry($data) {
-
-	global $logFile,$myPid;
-
-	$data = $_SERVER['PHP_SELF']." : [".$myPid."] ".$data;
-	
-	$logWrite= fopen($logFile, "a") or die("Unable to open file!");
-	fwrite($logWrite, date('Y-m-d h:i:s A',time()).": ".$data."\n");
-	fclose($logWrite);
-}
 
 function saveMessageToCsv($id, $date, $did, $contact, $message) {
 
