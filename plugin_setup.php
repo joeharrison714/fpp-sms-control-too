@@ -1,33 +1,8 @@
 
 <?
-$pluginName = "fpp-sms-control-too";
-
-function returnIfExists($json, $setting) {
-    if ($json == null) {
-        return "";
-    }
-    if (array_key_exists($setting, $json)) {
-        return $json[$setting];
-    }
-    return "";
-}
-
-function convertAndGetSettings() {
-    global $settings, $pluginName;
-        
-    $cfgFile = $settings['configDirectory'] . "/plugin." . $pluginName . ".json";
-    if (file_exists($cfgFile)) {
-        $j = file_get_contents($cfgFile);
-        $json = json_decode($j, true);
-        return $json;
-    }
-    $j = "{\"keywords\": [] }";
-    return json_decode($j, true);
-}
+include_once "sms-common.php";
 
 $pluginJson = convertAndGetSettings();
-
-
 ?>
 
 <div id="global" class="settings">
@@ -163,6 +138,7 @@ function SaveSMS() {
     smsConfig["messageSuccess"] = $("input[name=message_success]").val();
     smsConfig["messageFail"] = $("input[name=message_fail]").val();
     smsConfig["enabled"] = $("input[name=sms_enabled]").is(':checked');
+    smsConfig["logLevel"] = $("input[name=log_level]").val();
     
     SaveSMSConfig(smsConfig);
 }
@@ -234,6 +210,16 @@ $(document).ready(function() {
 </td>
 </tr>
 
+<tr>
+	<th style="text-align: left">Log level</th>
+<td>
+<select name="log_level">
+<option value='INFO'>INFO</option>
+<option value='DEBUG'>DEBUG</option>
+</select>
+</td>
+</tr>
+
 </table>
 
 <div>
@@ -269,6 +255,7 @@ $("input[name=voipms_did]").val(smsConfig["voipmsDid"]);
 $("input[name=message_success]").val(smsConfig["messageSuccess"]);
 $("input[name=message_fail]").val(smsConfig["messageFail"]);
 $("input[name=sms_enabled]").prop('checked', smsConfig["enabled"]);
+$("input[name=log_level]").val(smsConfig["logLevel"]);
 
 
 </script>
