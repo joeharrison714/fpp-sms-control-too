@@ -19,12 +19,14 @@ $logLevel = getLogLevel($pluginJson);
 $logFile = $settings['logDirectory']."/".$pluginName."-outgoing.log";
 
 logInfo("Log Level: " . $logLevel);
+logInfo("Send Command Number: " . $number);
+logInfo("Send Command Message: " . $message);
 
 $voipmsApiUsername = returnIfExists($pluginJson, "voipmsApiUsername");
 $voipmsApiPassword = returnIfExists($pluginJson, "voipmsApiPassword");
 $voipmsDid = returnIfExists($pluginJson, "voipmsDid");
 
-executeSend($number, $message);
+//executeSend($number, $message);
 
 function executeSend($number, $message){
     global $voipmsDid;
