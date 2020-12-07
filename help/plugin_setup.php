@@ -2,7 +2,7 @@
 <?php
 include_once "Parsedown.php";
 
-$result=file_get_contents("../README.md");
+$result=file_get_contents("/home/fpp/media/plugins/fpp-sms-control-too/README.md");
 
 $Parsedown = new Parsedown();
 
