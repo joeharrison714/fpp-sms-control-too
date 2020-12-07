@@ -10,7 +10,7 @@ $lastProcessedMessageDate = (new DateTime())->setTimestamp(0);
 $pluginJson = convertAndGetSettings();
 $keywordData = array();
 
-$isEnabled = getIsEnabled($pluginJson);
+$isEnabled = getBool($pluginJson, "enabled");
 $logLevel = getLogLevel($pluginJson);
 
 if($isEnabled == 1) {
@@ -24,6 +24,9 @@ if($isEnabled == 1) {
     $messageSuccess = returnIfExists($pluginJson, "messageSuccess");
     $messageInvalid = returnIfExists($pluginJson, "messageInvalid");
     $messageCondition = returnIfExists($pluginJson, "messageCondition");
+
+    $messageAppendResponse = getBool($pluginJson, "messageAppendResponse");
+    $adminNumbersText = returnIfExists($pluginJson, "adminNumbers");
     
     foreach($pluginJson["keywords"] as $item) {
         $thisKeyword = strtoupper(trim($item["keyword"]));
@@ -35,7 +38,16 @@ if($isEnabled == 1) {
             array_push($keywordData,$item);
         }
     }
-    var_dump($keywordData);
+    
+    $adminNumbers = array();
+    foreach(explode(",", $adminNumbersText) as $an) {
+        $tan = trim($an);
+        if (strlen($tan) > 0){
+            array_push($adminNumbers, $tan);
+        }
+    }
+    logDebug("Admin numbers: " . var_export($adminNumbers, true));
+    
 
     try{
         logDebug("Voip.ms username: " . $voipmsApiUsername);
@@ -50,6 +62,7 @@ if($isEnabled == 1) {
 
         logDebug("Voip.ms DID: " . $voipmsDid);
         logDebug("Success message: " . $messageSuccess);
+        logDebug("Append command response: " . ($messageAppendResponse ? 'true' : 'false'));
         logDebug("Invalid message: " . $messageInvalid);
         logDebug("Unmet conditions message: " . $messageCondition);
     
@@ -198,7 +211,7 @@ function processMessages($messageResponse){
 }
 
 function processMessage($smsMessage){
-    global $keywordData, $messageSuccess, $messageInvalid, $messageCondition;
+    global $keywordData, $messageSuccess, $messageAppendResponse, $messageInvalid, $messageCondition, $adminNumbers;
 
     $thisMessage = trim(strtoupper($smsMessage->message));
 
@@ -212,6 +225,8 @@ function processMessage($smsMessage){
     logDebug("Current status: " . $currentStatus);
     $currentlyPlaying = $fppStatus->current_playlist->playlist;
     logDebug("Currently playing: " . $currentlyPlaying);
+
+    $contact = $smsMessage->contact;
 
     foreach($keywordData as $item) {
         if (strcmp($item["keyword"], $thisMessage) == 0){
@@ -233,6 +248,13 @@ function processMessage($smsMessage){
                 }
             }
 
+            if (strlen($item["senderCondition"]) > 0){
+                if (!in_array($contact, $adminNumbers)){
+                    logDebug("Does not match sender condition (" . $contact . ")");
+                    $matchesAllConditions = false;
+                }
+            }
+
             if ($matchesAllConditions){
                 $allConditionsMetOfAny = true;
 
@@ -242,7 +264,7 @@ function processMessage($smsMessage){
     }
 
     $did = $smsMessage->did;
-    $contact = $smsMessage->contact;
+    
 
     if (!$matchedAny){
         sendMessage($did, $contact, $messageInvalid);
@@ -252,10 +274,16 @@ function processMessage($smsMessage){
             sendMessage($did, $contact, $messageCondition);
         }
         else{
+            $response = "";
             foreach($toExecute as $toExecuteItem) {
-                executeKeywordCommand($toExecuteItem);
+                $response = executeKeywordCommand($toExecuteItem);
             }
-            sendMessage($did, $contact, $messageSuccess);
+            $sm = $messageSuccess;
+            if ($messageAppendResponse){
+                $sm .= " " .  $response;
+                $sm = trim($sm);
+            }
+            sendMessage($did, $contact, $sm);
         }
     }
 }
@@ -301,6 +329,8 @@ function executeKeywordCommand($data){
         // $response = file_get_contents( $getUrl, false, $context );
         
         logDebug("FPP API Response: " . $response);
+
+        return $response;
     }
 }
 

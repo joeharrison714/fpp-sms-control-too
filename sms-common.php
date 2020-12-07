@@ -27,8 +27,8 @@ function convertAndGetSettings() {
     return json_decode($j, true);
 }
 
-function getIsEnabled($pluginJson){
-    $enabledSetting = returnIfExists($pluginJson, "enabled");
+function getBool($pluginJson, $name){
+    $enabledSetting = returnIfExists($pluginJson, $name);
 
     $isEnabled = false;
     if (is_bool($enabledSetting)){

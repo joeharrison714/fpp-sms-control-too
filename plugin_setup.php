@@ -26,6 +26,10 @@ function AddSMS() {
     html += "</select></td>";
     html += "<td><select class='smsplaylist' id='smsplaylist" + uniqueId + "'>";
     html += "</select></td>";
+    html += "<td><select class='smssender' id='smssender" + uniqueId + "'>";
+    html += "<option value=''>(any)</option>";
+    html += "<option value='admin'>admin only</option>";
+    html += "</select></td>";
     html += "<td><table class='fppTable' border=0 id='tableSMSCommand_" + uniqueId +"'>";
     html += "<tr><td>Command:</td><td><select class='smscommand' id='smscommand" + uniqueId + "' onChange='CommandSelectChanged(\"smscommand" + uniqueId + "\", \"tableSMSCommand_" + uniqueId + "\" , false, PrintArgsInputsForEditable);'><option value=''></option></select></td></tr>";
     html += "</table></td></tr>";
@@ -113,13 +117,15 @@ function SaveKeyword(row) {
     var keyword = $(row).find('.kwrd').val();
     var status = $(row).find('.smsstatus').val();
     var playlist = $(row).find('.smsplaylist').val();
+    var sender = $(row).find('.smssender').val();
 
     var id = $(row).find('.uniqueId').html();
     
     var json = {
         "keyword": keyword,
         "statusCondition": status,
-        "playlistCondition": playlist
+        "playlistCondition": playlist,
+        "senderCondition": sender
     };
     CommandToJSON('smscommand' + id, 'tableSMSCommand_' + id, json, true);
     return json;
@@ -140,6 +146,9 @@ function SaveSMS() {
     smsConfig["messageCondition"] = $("input[name=message_condition]").val();
     smsConfig["enabled"] = $("input[name=sms_enabled]").is(':checked');
     smsConfig["logLevel"] = $("select[name=log_level]").val();
+
+    smsConfig["messageAppendResponse"] = $("input[name=append_response]").is(':checked');
+    smsConfig["adminNumbers"] = $("input[name=admin_numbers]").val();
     
     SaveSMSConfig(smsConfig);
 }
@@ -200,6 +209,8 @@ $(document).ready(function() {
 	<th style="text-align: left">Success Message</th>
 <td>
 <input type='text' size='80' maxlength='160' name='message_success'>
+<br />
+<input type="checkbox" name="append_response"> Append command response to message
 </td>
 </tr>
 
@@ -215,6 +226,13 @@ $(document).ready(function() {
 	<th style="text-align: left">Unmet condition message</th>
 <td>
 <input type='text' size='80' maxlength='160' name='message_condition'>
+</td>
+</tr>
+
+<tr>
+	<th style="text-align: left">Admin phone numbers (comma-separated)<br /><small>(Format: 6105551234,6105556789)</small></th>
+<td>
+<input type='text' size='80' maxlength='160' name='admin_numbers'>
 </td>
 </tr>
 
@@ -239,7 +257,7 @@ $(document).ready(function() {
 <div class='fppTableWrapper'>
 <div class='fppTableContents'>
 <table class="fppTable" id="smsKeywordsTable"  width='100%'>
-<thead><tr class="fppTableHeader"><th>#</th><th>SMS Message</th><th>FPPD Status Condition</th><th>Playlist Condition</th><th>Command</th></tr></thead>
+<thead><tr class="fppTableHeader"><th>#</th><th>SMS Message</th><th>FPPD Status Condition</th><th>Playlist Condition</th><th>Sender Condition</th><th>Command</th></tr></thead>
 <tbody id='smsKeywordTableBody'>
 </tbody>
 </table>
@@ -247,11 +265,13 @@ $(document).ready(function() {
 </div>
 
 <script>
+
 $.each(smsConfig["keywords"], function( key, val ) {
     var row = AddSMS();
     $(row).find('.kwrd').val(val["keyword"]);
     $(row).find('.smsstatus').val(val["statusCondition"]);
     $(row).find('.smsplaylist').val(val["playlistCondition"]);
+    $(row).find('.smssender').val(val["senderCondition"]);
 
     var id = parseInt($(row).find('.uniqueId').html());
     PopulateExistingCommand(val, 'smscommand' + id, 'tableSMSCommand_' + id, false, PrintArgsInputsForEditable);
@@ -264,8 +284,10 @@ $("input[name=message_success]").val(smsConfig["messageSuccess"]);
 $("input[name=message_invalid]").val(smsConfig["messageInvalid"]);
 $("input[name=message_condition]").val(smsConfig["messageCondition"]);
 $("input[name=sms_enabled]").prop('checked', smsConfig["enabled"]);
-$("input[name=log_level]").val(smsConfig["logLevel"]);
+$("select[name=log_level]").val(smsConfig["logLevel"]);
 
+$("input[name=append_response]").prop('checked', smsConfig["messageAppendResponse"]);
+$("input[name=admin_numbers]").val(smsConfig["adminNumbers"]);
 
 </script>
 </fieldset>
