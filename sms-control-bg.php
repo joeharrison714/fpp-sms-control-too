@@ -104,7 +104,7 @@ function doCheck(){
     if ($messageResponse->status == "ip_not_enabled") {
         $cfgJson = file_get_contents($cfgFile);
         $cfgData = json_decode($cfgJson, true);
-        if($cfgData['ip_not_enabled']==false){
+        if(!array_key_exists('ip_not_enabled', $cfgData) || $cfgData['ip_not_enabled']==false ){
             $cfgData['ip_not_enabled'] = true;
             $updatedCfgJson = json_encode($cfgData);
             logInfo("WARNING: voip.ms api is not enabled for this IP Address, setting ip_not_enabled");
@@ -113,7 +113,7 @@ function doCheck(){
     }else{
         $cfgJson = file_get_contents($cfgFile);
         $cfgData = json_decode($cfgJson, true);
-        if($cfgData['ip_not_enabled']==true){
+        if(!array_key_exists('ip_not_enabled', $cfgData) || $cfgData['ip_not_enabled']==true){
             $cfgData['ip_not_enabled'] = false;
             $updatedCfgJson = json_encode($cfgData);
             logInfo("unsetting ip_not_enabled");
