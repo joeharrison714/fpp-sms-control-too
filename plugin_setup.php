@@ -101,7 +101,7 @@ function SaveSMSConfig(config) {
     //alert(data);
     $.ajax({
         type: "POST",
-        url: 'fppjson.php?command=setPluginJSON&plugin=<?= $pluginName ?>',
+        url: "api/configfile/plugin.fpp-sms-control-too.json",
         dataType: 'json',
         async: false,
         data: data,
