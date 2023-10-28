@@ -1,5 +1,6 @@
 <?php
 include_once "sms-common.php";
+include_once "/opt/fpp/www/common.php"; //Alows use of FPP Functions
 
 $logFile = $settings['logDirectory']."/".$pluginName.".log";
 $messagesCsvFile = $settings['logDirectory']."/".$pluginName."-messages.csv";
@@ -93,32 +94,18 @@ if($isEnabled == 1) {
 }
 
 function doCheck(){
-    global $settings, $pluginName;
-    $cfgFile = $settings['configDirectory'] . "/plugin." . $pluginName . ".json";
+    global $pluginName;
+
     $messageResponse = getMessages();
     logDebug("API Response Status: " . $messageResponse->status);
+
+    WriteSettingToFile("last_status",urlencode($messageResponse->status),$pluginName."-api-response");
 
     if ($messageResponse->status == "success"){
         processMessages($messageResponse);
     }
-    if ($messageResponse->status == "ip_not_enabled") {
-        $cfgJson = file_get_contents($cfgFile);
-        $cfgData = json_decode($cfgJson, true);
-        if(!array_key_exists('ip_not_enabled', $cfgData) || $cfgData['ip_not_enabled']==false ){
-            $cfgData['ip_not_enabled'] = true;
-            $updatedCfgJson = json_encode($cfgData);
-            logInfo("WARNING: voip.ms api is not enabled for this IP Address, setting ip_not_enabled");
-            file_put_contents($cfgFile, $updatedCfgJson);
-        }
-    }else{
-        $cfgJson = file_get_contents($cfgFile);
-        $cfgData = json_decode($cfgJson, true);
-        if(!array_key_exists('ip_not_enabled', $cfgData) || $cfgData['ip_not_enabled']==true){
-            $cfgData['ip_not_enabled'] = false;
-            $updatedCfgJson = json_encode($cfgData);
-            logInfo("unsetting ip_not_enabled");
-            file_put_contents($cfgFile, $updatedCfgJson);  
-        }
+    elseif ($messageResponse->status == "ip_not_enabled") {
+        logInfo("WARNING: voip.ms api is not enabled for this IP Address");
     }
 }
 
