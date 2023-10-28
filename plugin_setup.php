@@ -110,7 +110,7 @@ function SaveSMSConfig(config) {
         success: function (data) {
         }
     });
-    SetRestartFlag(2);
+    SetRestartFlag(1);
 }
 
 function SaveKeyword(row) {
