@@ -13,7 +13,7 @@
 
 $menuEntries = Array(
 	Array(
-		'text' => 'SMS Control',
+		'text' => 'SMS Control Too',
 		'type' => 'output',
 		'page' => 'plugin_setup.php',
 		'wrap' => 1
