@@ -1,6 +1,7 @@
 
 <?
 include_once "sms-common.php";
+include_once "/opt/fpp/www/common.php"; //Alows use of FPP Functions
 
 $pluginJson = convertAndGetSettings();
 ?>
@@ -175,10 +176,12 @@ $(document).ready(function() {
 
 <p>Press F1 for setup instructions</p>
 
-<?php 
+<?php
 
- if(array_key_exists('ip_not_enabled', $pluginJson)){
-    if($pluginJson['ip_not_enabled']==true){
+ $last_status = urldecode(ReadSettingFromFile("last_status",$pluginName."-api-response"));
+
+ if ($last_status != "" && $last_status != "no_sms") {
+    if ($last_status == "ip_not_enabled"){
         $getIPcurl = curl_init('ifconfig.me');
         curl_setopt($getIPcurl, CURLOPT_RETURNTRANSFER, true);
         $smsCurrentIP  = curl_exec($getIPcurl);
@@ -194,6 +197,7 @@ $(document).ready(function() {
         <?php
     }
  }
+
 ?>
 <table cellspacing="5">
 <tr>
