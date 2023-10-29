@@ -133,7 +133,7 @@ function getMessages(){
 
 
 function processMessages($messageResponse){
-    global $startCommand, $oldestMessageAge, $lastProcessedMessageDate;
+    global $startCommand, $oldestMessageAge, $lastProcessedMessageDate, $apiTimezone;
 
     $messagesToProcess = array();
 
@@ -147,10 +147,19 @@ function processMessages($messageResponse){
 
             $logLine = "Message ID: " . $id;
 
+            $datetime = new DateTime( $date, new DateTimeZone($apiTimezone) ); // voip.ms timezone
+            logDebug('API Message Datetime:' . date_format($datetime, 'Y-m-d H:i:sP'));
+            $datetime->setTimezone(new DateTimeZone('UTC'));
+            logDebug('UTC Message Datetime:' . date_format($datetime, 'Y-m-d H:i:sP'));
+
             $now = new DateTime('now');
-            $datetime = new DateTime( $date );
+            logDebug('Now Datetime:' . date_format($now, 'Y-m-d H:i:sP'));
+            $now->setTimezone(new DateTimeZone('UTC'));
+            logDebug('UTC Now Datetime:' . date_format($now, 'Y-m-d H:i:sP'));
+            
             $diffInSeconds = $now->getTimestamp() - $datetime->getTimestamp();
             $logLine .= "\t" . "Message Age: " . $diffInSeconds;
+            assert($diffInSeconds >= 0);
             $willProcess = false;
 
             if ($diffInSeconds > $oldestMessageAge){
@@ -193,7 +202,8 @@ function processMessages($messageResponse){
         $contact = $item->contact;
         $message = trim($item->message);
 
-        $datetime = new DateTime( $date );
+        $datetime = new DateTime( $date, new DateTimeZone($apiTimezone) );
+        $datetime->setTimezone(new DateTimeZone('UTC'));
 
         try{
             saveMessageToCsv($id, $date, $did, $contact, $message);
@@ -202,7 +212,7 @@ function processMessages($messageResponse){
 
             if ($datetime > $lastProcessedMessageDate){
                 $lastProcessedMessageDate = $datetime;
-                logDebug("Setting Last Processed Message Date to " . $lastProcessedMessageDate->format('Y-m-d H:i:s'));
+                logDebug("Setting Last Processed Message Date to " . $lastProcessedMessageDate->format('Y-m-d H:i:sP'));
             }
         } catch (Exception $e) {
             logInfo('Failed on processing message: ' . $id . " " . $e->getMessage());

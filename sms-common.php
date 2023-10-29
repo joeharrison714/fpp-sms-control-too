@@ -3,6 +3,7 @@ include_once "/opt/fpp/www/config.php";
 
 $pluginName = "fpp-sms-control-too";
 $apiBasePath = "https://voip.ms/api/v1";
+$apiTimezone = "Canada/Eastern"; // voip.ms api timezone
 
 function returnIfExists($json, $setting) {
     if ($json == null) {
