@@ -1,5 +1,6 @@
 <?php
 include_once "sms-common.php";
+include_once "/opt/fpp/www/common.php"; //Alows use of FPP Functions
 
 $logFile = $settings['logDirectory']."/".$pluginName.".log";
 $messagesCsvFile = $settings['logDirectory']."/".$pluginName."-messages.csv";
@@ -93,11 +94,18 @@ if($isEnabled == 1) {
 }
 
 function doCheck(){
+    global $pluginName;
+
     $messageResponse = getMessages();
     logDebug("API Response Status: " . $messageResponse->status);
 
+    WriteSettingToFile("last_status",urlencode($messageResponse->status),$pluginName."-api-response");
+
     if ($messageResponse->status == "success"){
         processMessages($messageResponse);
+    }
+    elseif ($messageResponse->status == "ip_not_enabled") {
+        logInfo("WARNING: voip.ms api is not enabled for this IP Address");
     }
 }
 

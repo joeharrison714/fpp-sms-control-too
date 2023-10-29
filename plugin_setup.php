@@ -1,6 +1,7 @@
 
 <?
 include_once "sms-common.php";
+include_once "/opt/fpp/www/common.php"; //Alows use of FPP Functions
 
 $pluginJson = convertAndGetSettings();
 ?>
@@ -174,6 +175,30 @@ $(document).ready(function() {
 
 
 <p>Press F1 for setup instructions</p>
+
+<?php
+
+ $last_status = urldecode(ReadSettingFromFile("last_status",$pluginName."-api-response"));
+
+ if ($last_status != "" && $last_status != "no_sms") {
+    if ($last_status == "ip_not_enabled"){
+        $getIPcurl = curl_init('ifconfig.me');
+        curl_setopt($getIPcurl, CURLOPT_RETURNTRANSFER, true);
+        $smsCurrentIP  = curl_exec($getIPcurl);
+        curl_close($getIPcurl);
+        ?>
+        <div class="callout callout-danger">
+        <h4>WARNING:</h4> 
+        <strong>
+        You have not enabled this IP Address for voip.ms API access. In order for this plugin to work, you must add your current IP address <u id="smsCurrentIP"><?php echo $smsCurrentIP; ?></u> to the list of enabled IP Addresses in your <a href="https://voip.ms/m/api.php">voip.ms API page</a>.
+        </strong>
+        
+        </div>
+        <?php
+    }
+ }
+
+?>
 <table cellspacing="5">
 <tr>
 	<th style="text-align: left">Enable SMS Control</th>
