@@ -16,6 +16,7 @@ if (strlen($message) == 0){
 $pluginJson = convertAndGetSettings();
 
 $logLevel = getLogLevel($pluginJson);
+$messagesCsvFile = $settings['logDirectory']."/".$pluginName."-messages.csv";
 $logFile = $settings['logDirectory']."/".$pluginName."-outgoing.log";
 
 logInfo("Log Level: " . $logLevel);
@@ -46,13 +47,21 @@ function sendMessageLocal($did, $destination, $message){
         throw new Exception("No message specified.");
     }
 
-    global $apiBasePath,$voipmsApiUsername,$voipmsApiPassword;
+    global $apiBasePath,$voipmsApiUsername,$voipmsApiPassword,$messagesCsvFile;
     $url = $apiBasePath . "/rest.php";
     $options = array(
         'http' => array(
         'method'  => 'GET'
         )
     );
+    if($destination=='SMS_MOST_RECENT_INCOMING_CONTACT'){
+        $csvFile = escapeshellarg($messagesCsvFile); 
+        $csvTail = `tail -n 1 $csvFile`;
+        $csvLastMessageArray = explode (",", $csvTail); 
+        $csvMostRecentContact = $csvLastMessageArray[count($csvLastMessageArray)-2];
+        $destination = $csvMostRecentContact;
+        fclose($csvOpen);
+    }
     $getdata = http_build_query(
         array(
         'api_username' => $voipmsApiUsername,
@@ -68,6 +77,8 @@ function sendMessageLocal($did, $destination, $message){
     logDebug("API Request: " . $url ."?" .$getdata);
     $result = file_get_contents( $url ."?" .$getdata, false, $context );
     logDebug("API response: " . $result);
+
+    
 }
 
 ?>
